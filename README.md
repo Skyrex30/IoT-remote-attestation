@@ -44,9 +44,12 @@ Roles follow the IETF RATS model: the STM32U5 is the **Attester**, the Python se
 
 ### Security-relevant design points
 
-Measurement and keys live only in the Secure World, ensuring compromised Non-Secure code cannot alter the measurement or read the keys. Pointer validation in NSC entry functions using cmse_check_pointed_object() and cmse_check_address_range() guards against confused-deputy attacks, and input is copied into Secure memory first to avoid time-of-check to time-of-use issues.
-Replay protection is implemented through a nonce and timestamp combination. Rate limiting on the ESP32 proxy issues HTTP 429 errors for requests made within five seconds of the previous one. 
-Sensitive buffers are zeroed before returning from Secure functions. Furthermore, the Python verifier must serialize the message in exactly the same little-endian byte order and field order as the C code, noting that the HMAC and ECDSA paths use different field orders.
+- **Measurement and keys live only in the Secure World.** Compromised Non-Secure code cannot alter the measurement or read the keys.
+- **Pointer validation in NSC entry functions** using `cmse_check_pointed_object()` / `cmse_check_address_range()` guards against confused-deputy attacks. Input is copied into Secure memory first to avoid TOCTOU issues.
+- **Replay protection** through nonce plus timestamp.
+- **Rate limiting** on the ESP32 proxy (HTTP 429 for requests within 5 s of the previous one).
+- Sensitive buffers are zeroed before returning from Secure functions.
+- The Python verifier must serialize the message in exactly the same byte order (little-endian) and field order as the C code. Note that the HMAC and ECDSA paths use different field orders.
 
 
 ## Cryptography and libraries
